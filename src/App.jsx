@@ -12,10 +12,7 @@ function App() {
     return localStorage.getItem("flashcards-current-deck") || "Default";
   });
 
-  const [frontText, setFrontText] = useState("");
-  const [backText, setBackText] = useState("");
   const [newDeckName, setNewDeckName] = useState("");
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [studyOnlyUnlearned, setStudyOnlyUnlearned] = useState(false);
@@ -91,21 +88,12 @@ function App() {
     }
   }, [newDeckName, decks]);
 
-  const handleFrontChange = useCallback(
-    (e) => setFrontText(e.target.value),
-    [],
-  );
-  const handleBackChange = useCallback((e) => setBackText(e.target.value), []);
-
   const handleAddCard = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (!frontText.trim() || !backText.trim()) return;
-
+    (front, back) => {
       const newCard = {
         id: Date.now(),
-        front: frontText,
-        back: backText,
+        front: front,
+        back: back,
         learned: false,
       };
 
@@ -113,10 +101,8 @@ function App() {
         ...prev,
         [currentDeckName]: [...(prev[currentDeckName] || []), newCard],
       }));
-      setFrontText("");
-      setBackText("");
     },
-    [frontText, backText, currentDeckName],
+    [currentDeckName],
   );
 
   const handleDeleteCard = useCallback(
@@ -136,9 +122,10 @@ function App() {
 
   const handleEditCard = useCallback(
     (card) => {
-      setFrontText(card.front);
-      setBackText(card.back);
       handleDeleteCard(card.id);
+      alert(
+        `Редактирование: Карточка удалена из таблицы. Пожалуйста, введите новые данные (Лицо: "${card.front}", Оборот: "${card.back}") в форму добавления сверху.`,
+      );
     },
     [handleDeleteCard],
   );
@@ -175,13 +162,7 @@ function App() {
         onAddDeck={handleAddDeck}
       />
 
-      <CardForm
-        frontText={frontText}
-        backText={backText}
-        onFrontChange={handleFrontChange}
-        onBackChange={handleBackChange}
-        onSubmit={handleAddCard}
-      />
+      <CardForm onSubmit={handleAddCard} />
 
       <hr />
       <section className="study-area">
@@ -221,8 +202,7 @@ function App() {
                 setShowBack(false);
               }}
             >
-              {" "}
-              Назад{" "}
+              Назад
             </button>
             <button
               disabled={currentIndex === filteredCards.length - 1}
@@ -232,8 +212,7 @@ function App() {
               }}
               style={{ marginLeft: "10px" }}
             >
-              {" "}
-              Вперед{" "}
+              Вперед
             </button>
           </div>
         ) : (
